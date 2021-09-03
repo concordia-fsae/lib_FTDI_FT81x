@@ -4,52 +4,6 @@
 @version 5.0
 @date    2020-10-29
 @author  Rudolph Riedel
-
-@section LICENSE
-
-MIT License
-
-Copyright (c) 2016-2020 Rudolph Riedel
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
-to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute,
-sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-@section History
-
-4.0
-- renamed from FT8.h to EVE.h
-- renamed EVE_81X_ENABLE to FT81X_ENABLE
-- changed FT8_ prefixes to EVE_
-- rearranged things a bit with FT80x specific includes moved to the end and a "#if defined (BT81X_ENABLE)" block on top of the chip-specific includes
-- started to add specific BT81x defines
-- minor maintenance
-- changed OPT_FLASH to EVE_OPT_FLASH and OPT_FORMAT to EVE_OPT_FORMAT for consistency
-- added EVE_OPT_FILL which has been left out of the documentation for the BT81x so far
-- added a few BT81x specific macros
-- added a few FT81x/BT81x specific host commands
-- removed the preceding underscore from the include guard define to avoid potential undefined behavior
-- removed a bunch of defines for FT80x that I never implemented for FT81x
-- added an include for "EVE_target.h" in order to reduce the necessary includes in the main project file
-- commented out the NOP macro as it was colliding with ESP32 includes
-
-5.0
-- started to add BT817 / BT818 defines
-- cleanup: removed FT80x defines
-- replaced BT81X_ENABLE with "EVE_GEN > 2"
-- removed FT81X_ENABLE as FT81x already is the lowest supported chip revision now
-- added more BT817 / BT818 defines
-- removed undocumented registers and commands
-- merged FT80x and FT81x definitions as FT81x is baseline now
-- removed the history from before 4.0
-
 */
 
 #pragma once

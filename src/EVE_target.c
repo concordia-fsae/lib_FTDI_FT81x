@@ -4,47 +4,7 @@
 @version 5.0
 @date    2021-06-02
 @author  Rudolph Riedel
-
-@section LICENSE
-
-MIT License
-
-Copyright (c) 2016-2021 Rudolph Riedel
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
-to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute,
-sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-@section History
-
-4.0
-- added support for MSP432
-- moved the two include lines out of reach for Arduino to increase compatibility with Arduino
-- removed preceding "__" from two CMSIS functions that were not necessary and maybe even wrong
-- moved the very basic DELAY_MS() function for ATSAM to EVE_target.c and therefore removed the unneceesary inlining for this function
-- added DMA support for ATSAME51
-- started to implement DMA support for STM32
-- added a few more controllers as examples from the ATSAMC2x and ATSAMx5x family trees
-
-5.0
-- changed the DMA buffer from uin8_t to uint32_t
-- added a section for Arduino-ESP32
-- corrected the clock-divider settings for ESP32
-- added DMA to ARDUINO_METRO_M4 target
-- added DMA to ARDUINO_NUCLEO_F446RE target
-- added DMA to Arduino-ESP32 target
-- added a native ESP32 target with DMA
-- added an experimental ARDUINO_TEENSY41 target with DMA support - I do not have any Teensy to test this with
-- added ARDUINO_TEENSY35 to the experimental ARDUINO_TEENSY41 target
-
- */
+*/
 
 #if !defined (ARDUINO)
 

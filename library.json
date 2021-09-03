@@ -1,0 +1,9 @@
+{
+    "name": "FTDI FT81x Library",
+    "export": {
+        "exclude": [
+            "example_pics/*",
+            "example_projects/*"
+        ]
+    }
+}

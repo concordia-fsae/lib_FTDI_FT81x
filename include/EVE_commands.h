@@ -4,81 +4,6 @@
 @version 5.0
 @date    2020-04-19
 @author  Rudolph Riedel
-
-@section LICENSE
-
-MIT License
-
-Copyright (c) 2016-2021 Rudolph Riedel
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
-to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute,
-sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-@section History
-
-4.0
-- changed FT8_ prefixes to EVE_
-- added EVE_cmd_flashsource()
-- added prototype for EVE_init_flash() - not functional yet
-- added protoypes for EVE_cmd_flashwrite(), EVE_cmd_flashread(), EVE_cmd_flashupdate(), EVE_cmd_flashfast(), EVE_cmd_flashspitx() and EVE_cmd_flashspirx()
-- added prototypes for EVE_cmd_inflate2(), EVE_cmd_rotatearound(), EVE_cmd_animstart(), EVE_cmd_animstop(), EVE_cmd_animxy(),
-	EVE_cmd_animdraw(), EVE_cmd_animframe(), EVE_cmd_gradienta(), EVE_cmd_fillwidth() and EVE_cmd_appendf()
-- added a paramter to EVE_get_touch_tag() to allow multi-touch
-- expanded EVE_cmdWrite() from command only to command+parameter
-- changed the prototype for EVE_cmd_getptr(), it returns the memory-address directly now
-- changed the prototype for EVE_cmd_memcrc(), it returns the crc32 directly now
-- changed the prototype for EVE_cmd_regread(), it returns the 32 bit value directly now
-- changed cmd_getprops() and cmd_getmatrix(), these return structures now
-- added EVE_cmd_text_var() after struggeling with varargs, this function adds a single paramter for string conversion if EVE_OPT_FORMAT is given
-- changed EVE_cmd_text_var() to a varargs function with the number of arguments as additional argument
-- added EVE_cmd_button_var() and EVE_cmd_toggle_var() functions
-- added prototype for EVE_calibrate_manual()
-- added prototypes EVE_cmd_flasherase(), EVE_cmd_flashattach(), EVE_cmd_flashdetach() and EVE_cmd_flashspidesel()
-- added an include for "EVE.h" in order to reduce the necessary includes in the main project file, only including "EVE_commands.h" is fine now
-- changed EVE_cmd_getprops() again, inspired by BRTs AN_025, changed the name to EVE_LIB_GetProps() and got rid of the returning data-structure
-- replaced EVE_cmd_getmatrix() with an earlier implementation again, looks like it is supposed to write, not read
-- added function EVE_color_rgb()
-- marked EVE_get_touch_tag() as deprecated
-- changed the "len" parameter for loadimage, inflate, inflate2 and EVE_memWrite_flash_buffer() to uint32_t
-
-5.0
-- added prototype for EVE_cmd_plkfreq()
-- replaced BT81X_ENABLE with "EVE_GEN > 2"
-- removed FT81X_ENABLE as FT81x already is the lowest supported chip revision now
-- removed the formerly as deprected marked EVE_get_touch_tag()
-- changed EVE_color_rgb() to use a 32 bit value like the rest of the color commands
-- removed the meta-commands EVE_cmd_point(), EVE_cmd_line() and EVE_cmd_rect()
-- removed obsolete functions EVE_get_cmdoffset(void) and EVE_report_cmdoffset(void) - cmdoffset is gone
-- renamed EVE_LIB_GetProps() back to EVE_cmd_getprops() since it does not do anything special to justify a special name
-- added prototype for helper function EVE_memWrite_sram_buffer()
-- added prototypes for EVE_cmd_bitmap_transform() and EVE_cmd_bitmap_transform_burst()
-- added prototype for EVE_cmd_playvideo()
-- added prototypes for EVE_cmd_setfont_burst() and EVE_cmd_setfont2_burst()
-- added prototype for EVE_cmd_videoframe()
-- restructured: functions are sorted by chip-generation and within their group in alphabetical order
-- reimplementedEVE_cmd_getmatrix() again, it needs to read values, not write them
-- added prototypes for EVE_cmd_fontcache() and EVE_cmd_fontcachequery()
-- added prototype for EVE_cmd_flashprogram()
-- added prototype for EVE_cmd_calibratesub()
-- added prototypes for EVE_cmd_animframeram(), EVE_cmd_animframeram_burst(), EVE_cmd_animstartram(), EVE_cmd_animstartram_burst()
-- added prototypes for EVE_cmd_apilevel(), EVE_cmd_apilevel_burst()
-- added prototypes for EVE_cmd_calllist(), EVE_cmd_calllist_burst()
-- added prototype for EVE_cmd_getimage()
-- added prototypes for EVE_cmd_hsf(), EVE_cmd_hsf_burst()
-- added prototype for EVE_cmd_linetime()
-- added prototypes for EVE_cmd_newlist(), EVE_cmd_newlist_burst()
-- added prototypes for EVE_cmd_runanim(), EVE_cmd_runanim_burst()
-- added prototype for EVE_cmd_wait()
-- removed the history from before 4.0
-
 */
 
 #pragma once
@@ -87,6 +12,16 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR TH
 #define EVE_COMMANDS_H_
 
 #include "EVE.h"
+
+
+typedef enum {
+    INIT_FAIL_CHIP_ID_NO_DATA,
+    INIT_FAIL_CHIP_ID_WRONG,
+    INIT_FAIL_CPU_STATE,
+    INIT_FAIL_FREQUENCY_SET,
+    INIT_SUCCESS = 0x7C,
+} InitStatus_E;
+
 
 /*----------------------------------------------------------------------------------------------------------------------------*/
 /*---- helper functions ------------------------------------------------------------------------------------------------------*/
@@ -176,7 +111,7 @@ uint8_t EVE_init_flash(void);
 
 #endif /* EVE_GEN > 2 */
 
-uint8_t EVE_init(void);
+InitStatus_E EVE_init(void);
 
 
 /*----------------------------------------------------------------------------------------------------------------------------*/
