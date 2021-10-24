@@ -1052,35 +1052,33 @@ static inline void EVE_reset(void)
 
 static void EVE_startup(void)
 {
-#if FTR_HAS_PDN
+#if EVE_HAS_PDN
     EVE_pdn_set();
     DELAY_MS(6); /* minimum time for power-down is 5ms */
     EVE_pdn_clear();
     DELAY_MS(21); /* minimum time to allow from rising PD_N to first access is 20ms */
 #else
     EVE_reset();
-#endif // FTR_HAS_PDN
+#endif // EVE_HAS_PDN
 
+#if EVE_HAS_CRYSTAL
+    EVE_cmdWrite(EVE_CLKEXT, 0); /* setup EVE for external clock */
+#else
+    EVE_cmdWrite(EVE_CLKINT, 0);    // setup EVE for internal clock
+#endif
 
-    #if defined (EVE_HAS_CRYSTAL)
-    EVE_cmdWrite(EVE_CLKEXT,0); /* setup EVE for external clock */
-    #else
-    EVE_cmdWrite(EVE_CLKINT,0); // setup EVE for internal clock
-    #endif
+#if EVE_GEN > 2
+    EVE_cmdWrite(EVE_CLKSEL, 0x46); /* set clock to 72 MHz */
+#endif
 
-    #if EVE_GEN > 2
-    EVE_cmdWrite(EVE_CLKSEL,0x46); /* set clock to 72 MHz */
-    #endif
-
-    EVE_cmdWrite(EVE_ACTIVE,0); /* start EVE */
+    EVE_cmdWrite(EVE_ACTIVE, 0); /* start EVE */
     DELAY_MS(20);
 }
 
-
 /* init, has to be executed with the SPI setup to 11 MHz or less as required by FT8xx / BT8xx */
-InitStatus_E EVE_init(void)
+InitStatus_E EVE_init(uint16_t *chipid)
 {
-    uint8_t chipid = 0;
+    *chipid          = 0;
     uint16_t timeout = 0;
 
     EVE_startup();
@@ -1096,19 +1094,19 @@ InitStatus_E EVE_init(void)
     */
     DELAY_MS(20);
 
-    while(true) /* if chipid is not 0x7c, continue to read it until it is, EVE needs a moment for its power on self-test and configuration */
+    while (true) /* if chipid is not 0x7c, continue to read it until it is, EVE needs a moment for its power on self-test and configuration */
     {
-        if(chipid == 0x7C)
+        if (*chipid == 0x7C)
         {
             break;
         }
 
         DELAY_MS(1);
-        chipid = EVE_memRead8(REG_ID);
+        *chipid = EVE_memRead8(REG_ID);
         timeout++;
-        if(timeout > 400)
+        if (timeout > 400)
         {
-            if (chipid == 0)
+            if (*chipid == 0)
             {
                 return INIT_FAIL_CHIP_ID_NO_DATA;
             }
@@ -1124,81 +1122,83 @@ InitStatus_E EVE_init(void)
     {
         DELAY_MS(1);
         timeout++;
-        if(timeout > 50) /* experimental, 10 was the lowest value to get the BT815 started with, the touch-controller was the last to get out of reset */
+        if (timeout > 50) /* experimental, 10 was the lowest value to get the BT815 started with, the touch-controller was the last to get out of reset */
         {
             return INIT_FAIL_CPU_STATE;
         }
     }
-    HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_SET);
 
-    /* tell EVE that we changed the frequency from default to 72MHz for BT8xx */
-    #if EVE_GEN > 2
+/* tell EVE that we changed the frequency from default to 72MHz for BT8xx */
+#if EVE_GEN > 2
     EVE_memWrite32(REG_FREQUENCY, 72000000);
-    #endif
+#endif
 
-    /* we have a display with a Goodix GT911 / GT9271 touch-controller on it, so we patch our FT811 or FT813 according to AN_336 or setup a BT815 accordingly */
-    #if defined (EVE_HAS_GT911)
+/* we have a display with a Goodix GT911 / GT9271 touch-controller on it, so we patch our FT811 or FT813 according to AN_336 or setup a BT815 accordingly */
+#if defined(EVE_HAS_GT911)
 
-    #if EVE_GEN > 2
-        EVE_memWrite16(REG_TOUCH_CONFIG, 0x05d0); /* switch to Goodix touch controller */
-    #else
-        uint32_t ftAddress;
+#    if EVE_GEN > 2
+    EVE_memWrite16(REG_TOUCH_CONFIG, 0x05d0); /* switch to Goodix touch controller */
+#    else
+    uint32_t ftAddress;
 
-        ftAddress = REG_CMDB_WRITE;
+    ftAddress = REG_CMDB_WRITE;
 
-        EVE_cs_set();
-        spi_transmit((uint8_t)(ftAddress >> 16) | MEM_WRITE); /* send Memory Write plus high address byte */
-        spi_transmit((uint8_t)(ftAddress >> 8)); /* send middle address byte */
-        spi_transmit((uint8_t)(ftAddress)); /* send low address byte */
-        private_block_write(EVE_GT911_data, EVE_GT911_len);
-        EVE_cs_clear();
-        while (EVE_busy());
+    EVE_cs_set();
+    spi_transmit((uint8_t)(ftAddress >> 16) | MEM_WRITE); /* send Memory Write plus high address byte */
+    spi_transmit((uint8_t)(ftAddress >> 8));              /* send middle address byte */
+    spi_transmit((uint8_t)(ftAddress));                   /* send low address byte */
+    private_block_write(EVE_GT911_data, EVE_GT911_len);
+    EVE_cs_clear();
+    while (EVE_busy())
+        ;
 
-        EVE_memWrite8(REG_TOUCH_OVERSAMPLE, 0x0f); /* setup oversample to 0x0f as "hidden" in binary-blob for AN_336 */
-        EVE_memWrite16(REG_TOUCH_CONFIG, 0x05D0); /* write magic cookie as requested by AN_336 */
+    EVE_memWrite8(REG_TOUCH_OVERSAMPLE, 0x0f); /* setup oversample to 0x0f as "hidden" in binary-blob for AN_336 */
+    EVE_memWrite16(REG_TOUCH_CONFIG, 0x05D0);  /* write magic cookie as requested by AN_336 */
 
-        /* specific to the EVE2 modules from Matrix-Orbital we have to use GPIO3 to reset GT911 */
-        EVE_memWrite16(REG_GPIOX_DIR,0x8008); /* Reset-Value is 0x8000, adding 0x08 sets GPIO3 to output, default-value for REG_GPIOX is 0x8000 -> Low output on GPIO3 */
-        DELAY_MS(1); /* wait more than 100�s */
-        EVE_memWrite8(REG_CPURESET, 0x00); /* clear all resets */
-        DELAY_MS(110); /* wait more than 55ms - does not work with multitouch, for some reason a minimum delay of 108ms is required */
-        EVE_memWrite16(REG_GPIOX_DIR,0x8000); /* setting GPIO3 back to input */
-    #endif
-    #endif
+    /* specific to the EVE2 modules from Matrix-Orbital we have to use GPIO3 to reset GT911 */
+    EVE_memWrite16(REG_GPIOX_DIR, 0x8008); /* Reset-Value is 0x8000, adding 0x08 sets GPIO3 to output, default-value for REG_GPIOX is 0x8000 -> Low output on GPIO3 */
+    DELAY_MS(1);                           /* wait more than 100�s */
+    EVE_memWrite8(REG_CPURESET, 0x00);     /* clear all resets */
+    DELAY_MS(110);                         /* wait more than 55ms - does not work with multitouch, for some reason a minimum delay of 108ms is required */
+    EVE_memWrite16(REG_GPIOX_DIR, 0x8000); /* setting GPIO3 back to input */
+#    endif
+#endif
 
-    /*  EVE_memWrite8(REG_PCLK, 0x00);  */  /* set PCLK to zero - don't clock the LCD until later, line disabled because zero is reset-default and we just did a reset */
+    /*  EVE_memWrite8(REG_PCLK, 0x00);  */ /* set PCLK to zero - don't clock the LCD until later, line disabled because zero is reset-default and we just did a reset */
 
-    #if defined (EVE_ADAM101)
+#if defined(EVE_ADAM101)
     EVE_memWrite8(REG_PWM_DUTY, 0x80); /* turn off backlight for Glyn ADAM101 module, it uses inverted values */
-    #else
+#else
     EVE_memWrite8(REG_PWM_DUTY, 0); /* turn off backlight for any other module */
-    #endif
+#endif
 
     /* Initialize Display */
-    EVE_memWrite16(REG_HSIZE,   EVE_HSIZE);   /* active display width */
-    EVE_memWrite16(REG_HCYCLE,  EVE_HCYCLE);  /* total number of clocks per line, incl front/back porch */
+    EVE_memWrite16(REG_HSIZE, EVE_HSIZE);     /* active display width */
+    EVE_memWrite16(REG_HCYCLE, EVE_HCYCLE);   /* total number of clocks per line, incl front/back porch */
     EVE_memWrite16(REG_HOFFSET, EVE_HOFFSET); /* start of active line */
-    EVE_memWrite16(REG_HSYNC0,  EVE_HSYNC0);  /* start of horizontal sync pulse */
-    EVE_memWrite16(REG_HSYNC1,  EVE_HSYNC1);  /* end of horizontal sync pulse */
-    EVE_memWrite16(REG_VSIZE,   EVE_VSIZE);   /* active display height */
-    EVE_memWrite16(REG_VCYCLE,  EVE_VCYCLE);  /* total number of lines per screen, including pre/post */
+    EVE_memWrite16(REG_HSYNC0, EVE_HSYNC0);   /* start of horizontal sync pulse */
+    EVE_memWrite16(REG_HSYNC1, EVE_HSYNC1);   /* end of horizontal sync pulse */
+    EVE_memWrite16(REG_VSIZE, EVE_VSIZE);     /* active display height */
+    EVE_memWrite16(REG_VCYCLE, EVE_VCYCLE);   /* total number of lines per screen, including pre/post */
     EVE_memWrite16(REG_VOFFSET, EVE_VOFFSET); /* start of active screen */
-    EVE_memWrite16(REG_VSYNC0,  EVE_VSYNC0);  /* start of vertical sync pulse */
-    EVE_memWrite16(REG_VSYNC1,  EVE_VSYNC1);  /* end of vertical sync pulse */
-    EVE_memWrite8(REG_SWIZZLE,  EVE_SWIZZLE); /* FT8xx output to LCD - pin order */
+    EVE_memWrite16(REG_VSYNC0, EVE_VSYNC0);   /* start of vertical sync pulse */
+    EVE_memWrite16(REG_VSYNC1, EVE_VSYNC1);   /* end of vertical sync pulse */
+    EVE_memWrite8(REG_SWIZZLE, EVE_SWIZZLE);  /* FT8xx output to LCD - pin order */
     EVE_memWrite8(REG_PCLK_POL, EVE_PCLKPOL); /* LCD data is clocked in on this PCLK edge */
-    EVE_memWrite8(REG_CSPREAD,  EVE_CSPREAD); /* helps with noise, when set to 1 fewer signals are changed simultaneously, reset-default: 1 */
+    EVE_memWrite8(REG_CSPREAD, EVE_CSPREAD);  /* helps with noise, when set to 1 fewer signals are changed simultaneously, reset-default: 1 */
 
     /* do not set PCLK yet - wait for just after the first display list */
 
     /* configure Touch */
-    EVE_memWrite8(REG_TOUCH_MODE, EVE_TMODE_CONTINUOUS); /* enable touch */
+    EVE_memWrite8(REG_TOUCH_MODE, EVE_TMODE_CONTINUOUS);    /* enable touch */
     EVE_memWrite16(REG_TOUCH_RZTHRESH, EVE_TOUCH_RZTHRESH); /* eliminate any false touches */
 
+#if EVE_HAS_AUDIO
     /* disable Audio for now */
-    EVE_memWrite8(REG_VOL_PB, 0x00); /* turn recorded audio volume down */
+    EVE_memWrite8(REG_VOL_PB, 0x00);    /* turn recorded audio volume down */
     EVE_memWrite8(REG_VOL_SOUND, 0x00); /* turn synthesizer volume off */
-    EVE_memWrite16(REG_SOUND, 0x6000); /* set synthesizer to mute */
+    EVE_memWrite16(REG_SOUND, 0x6000);  /* set synthesizer to mute */
+#endif
 
     /* write a basic display-list to get things started */
     EVE_memWrite32(EVE_RAM_DL, DL_CLEAR_RGB);
@@ -1208,44 +1208,43 @@ InitStatus_E EVE_init(void)
 
     /* nothing is being displayed yet... the pixel clock is still 0x00 */
 
-    #if EVE_GEN > 3
-    #if defined (EVE_PCLK_FREQ)
+#if EVE_GEN > 3
+#    if defined(EVE_PCLK_FREQ)
     uint32_t frequency;
     frequency = EVE_cmd_pclkfreq(EVE_PCLK_FREQ, 0); /* setup the second PLL for the pixel-clock according to the define in EVE_config.h for the display, as close a match as possible */
-    if(frequency == 0) /* this failed for some reason so we return with an error */
+    if (frequency == 0)                             /* this failed for some reason so we return with an error */
     {
         return INIT_FAIL_FREQUENCY_SET;
     }
-    #endif
-    #endif
+#    endif
+#endif
 
-    EVE_memWrite8(REG_GPIO, 0x80); /* enable the DISP signal to the LCD panel, it is set to output in REG_GPIO_DIR by default */
+    EVE_memWrite8(REG_GPIO, 0x80);     /* enable the DISP signal to the LCD panel, it is set to output in REG_GPIO_DIR by default */
     EVE_memWrite8(REG_PCLK, EVE_PCLK); /* now start clocking data to the LCD panel */
 
-    #if defined (EVE_ADAM101)
+#if defined(EVE_ADAM101)
     EVE_memWrite8(REG_PWM_DUTY, 0x60); /* turn on backlight to 25% for Glyn ADAM101 module, it uses inverted values */
-    #else
+#else
     EVE_memWrite8(REG_PWM_DUTY, 0x20); /* turn on backlight to 25% for any other module */
-    #endif
+#endif
 
     timeout = 0;
-    while(EVE_busy() == 1) /* just to be safe, should not even enter the loop */
+    while (EVE_busy() == 1) /* just to be safe, should not even enter the loop */
     {
         DELAY_MS(1);
         timeout++;
-        if(timeout > 4)
+        if (timeout > 4)
         {
             break; /* something is wrong here, but since we made it this far through the init, just leave the loop */
         }
     }
 
-    #if defined (EVE_DMA)
+#if defined(EVE_DMA)
     EVE_init_dma(); /* prepare DMA */
-    #endif
+#endif
 
     return INIT_SUCCESS;
 }
-
 
 /*----------------------------------------------------------------------------------------------------------------------------*/
 /*-------- functions for display lists ---------------------------------------------------------------------------------------*/

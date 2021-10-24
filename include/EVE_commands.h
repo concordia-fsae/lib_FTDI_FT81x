@@ -111,7 +111,7 @@ uint8_t EVE_init_flash(void);
 
 #endif /* EVE_GEN > 2 */
 
-InitStatus_E EVE_init(void);
+InitStatus_E EVE_init(uint16_t *);
 
 
 /*----------------------------------------------------------------------------------------------------------------------------*/

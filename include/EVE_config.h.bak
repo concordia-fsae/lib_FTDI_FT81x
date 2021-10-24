@@ -8,8 +8,7 @@
 
 #pragma once
 
-#ifndef EVE_CONFIG_H_
-#define EVE_CONFIG_H_
+#if 0
 
 /* select the settings for the TFT attached */
 #if 0
@@ -85,7 +84,7 @@
 #endif
 
 // #define EVE_EVE3_50G
-#include "ScreenConfig.h"
+// #include "ScreenConfig.h"
 
 
 /* display timing parameters below */
@@ -355,7 +354,7 @@
 #define EVE_SWIZZLE	(0L)
 #define EVE_CSPREAD	(1L)
 #define EVE_TOUCH_RZTHRESH (1200L)
-// #define EVE_HAS_CRYSTAL
+#define EVE_HAS_CRYSTAL
 #define EVE_GEN 2
 #endif
 
@@ -1093,4 +1092,4 @@
 #endif
 
 
-#endif /* EVE_CONFIG_H */
+#endif // #if 0

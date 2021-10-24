@@ -8,11 +8,9 @@
 
 #pragma once
 
-#ifndef EVE_H_
-#define EVE_H_
-
+#include "ScreenConfig.h"
 #include "EVE_target.h"
-#include "EVE_config.h"
+// #include "EVE_config.h"
 #include "EVE_commands.h"
 
 /* Memory */
@@ -681,5 +679,3 @@
 #define REG_ANIM_ACTIVE  0x0030902C
 
 #endif /*  EVE_GEN > 3 */
-
-#endif /* EVE_H_ */

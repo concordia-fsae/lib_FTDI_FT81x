@@ -6,9 +6,6 @@
 @author  Rudolph Riedel
 */
 
-#ifndef EVE_TARGET_H_
-#define EVE_TARGET_H_
-
 /* While the following lines make things a lot easier like automatically compiling the code for the target you are compiling for, */
 /* a few things are expected to be taken care of beforehand. */
 /* - setting the Chip-Select and Power-Down pins to Output, Chip-Select = 1 and Power-Down = 0 */
@@ -650,11 +647,11 @@
 
         #if defined (STM32L073xx) || (STM32F1) || (STM32F207xx) || (STM32F3) || (STM32F4)
 
-        #if defined (STM32L073xx) /* set by PlatformIO board definition file nucleo_l073z.json */
-        #include "stm32l0xx.h"
-        #include "stm32l0xx_hal.h"
-        #include "stm32l0xx_ll_spi.h"
-        #endif
+        // #if defined (STM32L073xx) /* set by PlatformIO board definition file nucleo_l073z.json */
+        // #include "stm32l0xx.h"
+        // #include "stm32l0xx_hal.h"
+        // #include "stm32l0xx_ll_spi.h"
+        // #endif
 
         #if defined (STM32F1) /* set by PlatformIO board definition file genericSTM32F103C8.json */
         #include "stm32f1xx.h"
@@ -663,33 +660,33 @@
         extern SPI_HandleTypeDef hspi1;
         #endif
 
-        #if defined (STM32F207xx) /* set by PlatformIO board definition file nucleo_f207zg.json */
-        #include "stm32f2xx.h"
-        #include "stm32f2xx_hal.h"
-        #include "stm32f2xx_ll_spi.h"
-        #endif
+        // #if defined (STM32F207xx) /* set by PlatformIO board definition file nucleo_f207zg.json */
+        // #include "stm32f2xx.h"
+        // #include "stm32f2xx_hal.h"
+        // #include "stm32f2xx_ll_spi.h"
+        // #endif
 
-        #if defined (STM32F3) /* set by PlatformIO board definition file genericSTM32F303CB.json */
-        #include "stm32f3xx.h"
-        #include "stm32f3xx_hal.h"
-        #include "stm32f3xx_ll_spi.h"
-        #endif
+        // #if defined (STM32F3) /* set by PlatformIO board definition file genericSTM32F303CB.json */
+        // #include "stm32f3xx.h"
+        // #include "stm32f3xx_hal.h"
+        // #include "stm32f3xx_ll_spi.h"
+        // #endif
 
-        #if defined (STM32F4) /* set by PlatformIO board definition file genericSTM32F407VET6.json */
-        #include "stm32f4xx.h"
-        #include "stm32f4xx_hal.h"
-        #include "stm32f4xx_ll_spi.h"
-        #endif
+        // #if defined (STM32F4) /* set by PlatformIO board definition file genericSTM32F407VET6.json */
+        // #include "stm32f4xx.h"
+        // #include "stm32f4xx_hal.h"
+        // #include "stm32f4xx_ll_spi.h"
+        // #endif
 
 
         #define EVE_SPI SPI1
         #define EVE_CS_PORT SPI1_NSS_GPIO_Port
         #define EVE_CS SPI1_NSS_Pin
 
-#if FTR_HAS_PDN
-        #define EVE_PDN_PORT GPIOD
-        #define EVE_PDN GPIO_PIN_13
-#endif // FTR_HAS_PDN
+#if EVE_HAS_PDN
+        #define EVE_PDN_PORT FT_PDN_GPIO_Port
+        #define EVE_PDN FT_PDN_Pin
+#endif // EVE_HAS_PDN
 
 //      #define EVE_DMA     /* do not activate, it is not working yet */
 #if defined (EVE_DMA)
@@ -709,7 +706,7 @@
 
         #define DELAY_MS(ms) HAL_Delay(ms)
 
-#if FTR_HAS_PDN
+#if EVE_HAS_PDN
         static inline void EVE_pdn_clear(void)
         {
             HAL_GPIO_WritePin(EVE_PDN_PORT, EVE_PDN, GPIO_PIN_SET);
@@ -719,7 +716,7 @@
         {
             HAL_GPIO_WritePin(EVE_PDN_PORT, EVE_PDN, GPIO_PIN_RESET);
         }
-#endif // FTR_HAS_PDN
+#endif // EVE_HAS_PDN
 
         static inline void EVE_cs_clear(void)
         {
@@ -1093,6 +1090,7 @@
 /*----------------------------------------------------------------------------------------------------------------*/
 
 #if defined (ARDUINO)
+    #error Arduino
 
     #include <Arduino.h>
     #include <stdio.h>
@@ -1595,5 +1593,3 @@
     }
 
 #endif /* Arduino */
-
-#endif /* EVE_TARGET_H_ */
