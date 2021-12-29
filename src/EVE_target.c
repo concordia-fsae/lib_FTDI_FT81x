@@ -29,7 +29,7 @@
 			}
 		}
 
-		#if defined (EVE_DMA)
+		#if EVE_DMA
 
 			static DmacDescriptor dmadescriptor __attribute__((aligned(16)));
 			static DmacDescriptor dmawriteback __attribute__((aligned(16)));
@@ -143,7 +143,7 @@
 
 		#if defined (STM32L073xx) || (STM32F1) || (STM32F207xx) || (STM32F3) || (STM32F4)
 
-		#if defined (EVE_DMA)
+		#if EVE_DMA
 			uint32_t EVE_dma_buffer[1025];
 			volatile uint16_t EVE_dma_buffer_index;
 			volatile uint8_t EVE_dma_busy = 0;
@@ -197,7 +197,7 @@
 		static void eve_spi_post_transfer_callback(void)
 		{
 			gpio_set_level(EVE_CS, 1); /* tell EVE to stop listen */
-			#if defined (EVE_DMA)
+			#if EVE_DMA
 				EVE_dma_busy = 0;
 			#endif
 			}
@@ -242,7 +242,7 @@
 			spi_bus_add_device(HSPI_HOST, &devcfg, &EVE_spi_device_simple);
 		}
 
-		#if defined (EVE_DMA)
+		#if EVE_DMA
 
 		uint32_t EVE_dma_buffer[1025];
 		volatile uint16_t EVE_dma_buffer_index;
@@ -319,7 +319,7 @@
 
 		#include <Adafruit_ZeroDMA.h>
 
-		#if defined (EVE_DMA)
+		#if EVE_DMA
 			uint32_t EVE_dma_buffer[1025];
 			volatile uint16_t EVE_dma_buffer_index;
 			volatile uint8_t EVE_dma_busy = 0;
@@ -402,7 +402,7 @@
 			__HAL_SPI_ENABLE(&eve_spi_handle);
 		}
 
-		#if defined (EVE_DMA)
+		#if EVE_DMA
 			uint32_t EVE_dma_buffer[1025];
 			volatile uint16_t EVE_dma_buffer_index;
 			volatile uint8_t EVE_dma_busy = 0;
@@ -464,7 +464,7 @@
 		static void eve_spi_post_transfer_callback(void)
 		{
 			digitalWrite(EVE_CS, HIGH); /* tell EVE to stop listen */
-			#if defined (EVE_DMA)
+			#if EVE_DMA
 				EVE_dma_busy = 0;
 			#endif
 			}
@@ -498,7 +498,7 @@
 			spi_bus_add_device(HSPI_HOST, &devcfg, &EVE_spi_device_simple);
 		}
 
-		#if defined (EVE_DMA)
+		#if EVE_DMA
 			uint32_t EVE_dma_buffer[1025];
 			volatile uint16_t EVE_dma_buffer_index;
 			volatile uint8_t EVE_dma_busy = 0;
@@ -529,7 +529,7 @@
 	#if defined (ARDUINO_TEENSY41) || (ARDUINO_TEENSY35) /* note: this is mostly untested */
 		#include "EVE_target.h"
 
-		#if defined (EVE_DMA)
+		#if EVE_DMA
 		uint32_t EVE_dma_buffer[1025];
 		volatile uint16_t EVE_dma_buffer_index;
 		volatile uint8_t EVE_dma_busy = 0;
