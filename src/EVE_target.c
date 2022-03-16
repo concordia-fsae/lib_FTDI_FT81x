@@ -4,47 +4,7 @@
 @version 5.0
 @date    2021-06-02
 @author  Rudolph Riedel
-
-@section LICENSE
-
-MIT License
-
-Copyright (c) 2016-2021 Rudolph Riedel
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"),
-to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute,
-sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-@section History
-
-4.0
-- added support for MSP432
-- moved the two include lines out of reach for Arduino to increase compatibility with Arduino
-- removed preceding "__" from two CMSIS functions that were not necessary and maybe even wrong
-- moved the very basic DELAY_MS() function for ATSAM to EVE_target.c and therefore removed the unneceesary inlining for this function
-- added DMA support for ATSAME51
-- started to implement DMA support for STM32
-- added a few more controllers as examples from the ATSAMC2x and ATSAMx5x family trees
-
-5.0
-- changed the DMA buffer from uin8_t to uint32_t
-- added a section for Arduino-ESP32
-- corrected the clock-divider settings for ESP32
-- added DMA to ARDUINO_METRO_M4 target
-- added DMA to ARDUINO_NUCLEO_F446RE target
-- added DMA to Arduino-ESP32 target
-- added a native ESP32 target with DMA
-- added an experimental ARDUINO_TEENSY41 target with DMA support - I do not have any Teensy to test this with
-- added ARDUINO_TEENSY35 to the experimental ARDUINO_TEENSY41 target
-
- */
+*/
 
 #if !defined (ARDUINO)
 
@@ -69,7 +29,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR TH
 			}
 		}
 
-		#if defined (EVE_DMA)
+		#if EVE_DMA
 
 			static DmacDescriptor dmadescriptor __attribute__((aligned(16)));
 			static DmacDescriptor dmawriteback __attribute__((aligned(16)));
@@ -183,7 +143,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR TH
 
 		#if defined (STM32L073xx) || (STM32F1) || (STM32F207xx) || (STM32F3) || (STM32F4)
 
-		#if defined (EVE_DMA)
+		#if EVE_DMA
 			uint32_t EVE_dma_buffer[1025];
 			volatile uint16_t EVE_dma_buffer_index;
 			volatile uint8_t EVE_dma_busy = 0;
@@ -237,7 +197,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR TH
 		static void eve_spi_post_transfer_callback(void)
 		{
 			gpio_set_level(EVE_CS, 1); /* tell EVE to stop listen */
-			#if defined (EVE_DMA)
+			#if EVE_DMA
 				EVE_dma_busy = 0;
 			#endif
 			}
@@ -282,7 +242,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR TH
 			spi_bus_add_device(HSPI_HOST, &devcfg, &EVE_spi_device_simple);
 		}
 
-		#if defined (EVE_DMA)
+		#if EVE_DMA
 
 		uint32_t EVE_dma_buffer[1025];
 		volatile uint16_t EVE_dma_buffer_index;
@@ -359,7 +319,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR TH
 
 		#include <Adafruit_ZeroDMA.h>
 
-		#if defined (EVE_DMA)
+		#if EVE_DMA
 			uint32_t EVE_dma_buffer[1025];
 			volatile uint16_t EVE_dma_buffer_index;
 			volatile uint8_t EVE_dma_busy = 0;
@@ -442,7 +402,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR TH
 			__HAL_SPI_ENABLE(&eve_spi_handle);
 		}
 
-		#if defined (EVE_DMA)
+		#if EVE_DMA
 			uint32_t EVE_dma_buffer[1025];
 			volatile uint16_t EVE_dma_buffer_index;
 			volatile uint8_t EVE_dma_busy = 0;
@@ -504,7 +464,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR TH
 		static void eve_spi_post_transfer_callback(void)
 		{
 			digitalWrite(EVE_CS, HIGH); /* tell EVE to stop listen */
-			#if defined (EVE_DMA)
+			#if EVE_DMA
 				EVE_dma_busy = 0;
 			#endif
 			}
@@ -538,7 +498,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR TH
 			spi_bus_add_device(HSPI_HOST, &devcfg, &EVE_spi_device_simple);
 		}
 
-		#if defined (EVE_DMA)
+		#if EVE_DMA
 			uint32_t EVE_dma_buffer[1025];
 			volatile uint16_t EVE_dma_buffer_index;
 			volatile uint8_t EVE_dma_busy = 0;
@@ -569,7 +529,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR TH
 	#if defined (ARDUINO_TEENSY41) || (ARDUINO_TEENSY35) /* note: this is mostly untested */
 		#include "EVE_target.h"
 
-		#if defined (EVE_DMA)
+		#if EVE_DMA
 		uint32_t EVE_dma_buffer[1025];
 		volatile uint16_t EVE_dma_buffer_index;
 		volatile uint8_t EVE_dma_busy = 0;
