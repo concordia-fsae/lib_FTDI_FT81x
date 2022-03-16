@@ -5,11 +5,13 @@
 # error "EVE_target_STM32 included for target other than STM32F1. Changes are necessary to make this work"
 #endif
 
-#include "FreeRTOS.h"
-#include "task.h"
-#include "gpio.h"
 #include "stm32f1xx.h"
 #include "stm32f1xx_ll_spi.h"
+
+#include "FreeRTOS.h"
+#include "task.h"
+
+#include "HW_gpio.h"
 
 #define DELAY_MS(ms) vTaskDelay(pdMS_TO_TICKS(ms))
 #define EVE_SPI      SPI1
